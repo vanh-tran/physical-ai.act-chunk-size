@@ -1,7 +1,27 @@
 ---
-title: "What chunk_size does to ACT — and what it took to find out"
+title: "How Action Chunking with Transformer chunk_size affects its Success Rate"
 layout: default
 ---
+
+<style>
+/* Center markdown-generated tables on the page (cell text alignment unchanged).
+   Inline tables inside flex cards are width:100%, so auto margins are a no-op there. */
+.main-content table {
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Justify body paragraphs so line endings align on both edges. */
+.main-content p {
+  text-align: justify;
+  text-align-last: justify;
+  hyphens: auto;
+}
+/* ...but leave paragraphs inside the flex cards left-aligned. */
+.main-content div p {
+  text-align: left;
+  text-align-last: left;
+}
+</style>
 
 *I varied one number in ACT's config from 16 to 100. Success collapsed from 14% to 0%. But the real finding wasn't the collapse — it was why. And it took seven dead ends and one falsified hypothesis to even run the experiment.*
 
@@ -11,11 +31,11 @@ layout: default
 
 **The PushT task.** A circular block pushes a T-shaped block to a green target zone. At every timestep the environment gives a reward: 1.0 when the T perfectly covers the target, 0.0 when it's nowhere near. It's the simplest robot-learning task that surfaces real behavior — a single action dimension, a single objective, but enough physics to punish sloppy predictions.
 
-<video autoplay loop muted playsinline width="100%" style="max-width:600px; border-radius:6px;">
+<video autoplay loop muted playsinline width="100%" style="max-width:600px; border-radius:6px; display:block; margin:0 auto 1.5em;">
   <source src="assets/pushT-demo.mp4" type="video/mp4">
 </video>
 
-**What ACT does.** ACT (Action Chunking Transformer) is a visuomotor policy. It sees a camera image and the robot's joint positions, and predicts a *chunk* of future actions — not just the next one. `chunk_size` controls how many actions are predicted at once. `n_action_steps` controls how many of those predictions are executed open-loop before the policy re-observes the world and re-plans.
+**What ACT does.** ACT (Action Chunking Transformer) is a visuomotor policy. It sees a camera image and the robot's joint positions, and predicts a *chunk* of future actions. `chunk_size` controls how many actions are predicted at once. `n_action_steps` controls how many of those predictions are executed open-loop before the policy re-observes the world and re-plans.
 
 ![ACT architecture — CVAE encoder/decoder](assets/act_architecture.png)
 
@@ -48,7 +68,7 @@ The gap between these two metrics is where the finding lives.
 
 <div style="border-left:4px solid #EF5350; background:#FFEBEE; padding:1em 1.2em; margin:1.5em 0; border-radius:4px;">
   <strong>⚠️ The Confound</strong><br>
-  Matching <code>n_action_steps = chunk_size</code> varies two things at once: (1) how far ahead the model learns to predict during training, and (2) how many actions are executed open-loop before re-planning during inference. A bigger chunk_size means the policy re-plans less often. This experiment measures the <em>combined</em> effect. Isolating them is a follow-up. Naming the confound is itself part of showing you understand what you're measuring.
+  Matching <code>n_action_steps = chunk_size</code> varies two things at once: (1) how far ahead the model learns to predict during training, and (2) how many actions are executed open-loop before re-planning during inference. A bigger <code>chunk_size</code> means the policy re-plans less often. This experiment measures the <em>combined</em> effect. Isolating them is a follow-up. Naming the confound is itself part of showing you understand what you're measuring.
 </div>
 
 ---
@@ -78,7 +98,7 @@ The gap between these two metrics is where the finding lives.
 | 32 | **8.0%** (4/50) | 0.706 | 79.15 |
 | 100 | **0.0%** (0/50) | 0.326 | 28.28 |
 
-pc_success drops monotonically: 14% → 8% → 0%. Bigger chunks, worse success. Straightforward.
+`pc_success` drops monotonically: 14% → 8% → 0%. Bigger chunks, worse success. Straightforward.
 
 But `avg_max_reward` doesn't follow the same curve. It *peaks* at chunk32: 0.706, higher than chunk16's 0.686. The model that succeeded less often came closer to the goal on average. At chunk32, `sum_reward` is also highest (79.15), meaning the block spent the most cumulative time near the goal. Then both metrics collapse at chunk100 (avg_max 0.326, sum 28.28) — the block never really got close.
 
@@ -92,7 +112,7 @@ At chunk100, the policy re-plans only ~3 times across a 300-step episode. It exe
 
 This experiment is one command: `lerobot-train ... --policy.chunk_size=16`. It took seven dead ends and one falsified hypothesis before that command ran clean. Here are two that earned their spot in the write-up.
 
-### #1 I tried to move decode to the GPU — and proved myself wrong
+### #1: I tried to move decode to the GPU — and proved myself wrong
 
 During the first successful run, the GPU sat at ~90% idle. `data_s` — the time spent fetching the next batch from the dataloader — was ~0.44 seconds per training step. `updt_s` — the time spent computing the gradient — was ~0.037 seconds. The GPU was waiting on the CPU 12× longer than it was computing.
 
@@ -144,7 +164,7 @@ I'd built a mental model of the bottleneck, gathered the tools to fix it, and th
 
 *Measure the bottleneck before optimizing it.*
 
-### #2 The tutorial didn't mention these four flags
+### #2: The tutorial didn't mention these four flags
 
 The LeRobot README says:
 
@@ -199,7 +219,3 @@ Everything needed to reproduce this experiment is in the [repository root](../):
 - **Results:** `results/chunk{16,32,100}_eval.json` — per-episode eval data
 
 **Environment:** `huggingface/lerobot-gpu@sha256:b0318f57aaab7d8204f5bd3c61bf98b4660c4240b546e60d6205e1d65035b9d2`, torch 2.11, LeRobot 0.5.2, torchcodec 0.11.1+cpu, seed=1000, PushT, 20k steps.
-
----
-
-*Part of the [Physical AI Study Plan](https://github.com/huggingface/lerobot) — Module 1. The behind-the-scenes narrative of every break that led here is in the [wiki error chain](https://github.com/vanhtran/module1).*
