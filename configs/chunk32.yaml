@@ -1,0 +1,37 @@
+# Locked config — ACT chunk_size experiment, chunk_size=32
+# Reproduced with: bash scripts/train.sh 32
+
+dataset:
+  repo_id: lerobot/pusht
+  video_backend: torchcodec
+
+policy:
+  type: act
+  chunk_size: 32
+  n_action_steps: 32
+  device: cuda
+  push_to_hub: false
+
+training:
+  batch_size: 64
+  num_workers: 8
+  seed: 1000
+  steps: 20000
+  log_freq: 100
+  save_freq: 10000
+
+eval:
+  type: pusht
+  env_eval_freq: 10000
+  n_episodes: 50
+  seed: 1000
+
+wandb:
+  enabled: true
+  project: lerobot-chunksize
+
+environment:
+  image: huggingface/lerobot-gpu@sha256:b0318f57aaab7d8204f5bd3c61bf98b4660c4240b546e60d6205e1d65035b9d2
+  torch: 2.11.0+cu128
+  lerobot: 0.5.2
+  torchcodec: 0.11.1+cpu

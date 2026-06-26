@@ -1,0 +1,4 @@
+title: "What chunk_size does to ACT — and what it took to find out"
+remote_theme: pages-themes/cayman
+plugins:
+  - jekyll-remote-theme

@@ -1,0 +1,13 @@
+# Dependencies
+__pycache__/
+*.pyc
+.venv/
+
+# Checkpoints (too large — see README for Hugging Face Hub link)
+checkpoints/
+
+# Wandb
+wandb/
+
+# OS
+.DS_Store
