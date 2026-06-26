@@ -1,10 +1,8 @@
 # ACT chunk_size Experiment — Module 1 Artifact
 
-> **Physical AI Study Plan, Module 1, Gap 4.** What does ACT's `chunk_size` actually control, and how does it affect task success on PushT?
-
 **Result:** pc_success drops **14% → 8% → 0%** as chunk_size increases 16 → 32 → 100. The bottleneck is open-loop staleness, not training horizon.
 
-[Full write-up →](#) *(link your long-form post when published)*
+[Full write-up →](https://vanh-tran.github.io/physical-ai.act-chunk-size/)
 
 ---
 
@@ -112,7 +110,3 @@ Model checkpoints are not included (too large). To reproduce from scratch, run `
 | gym-pusht | 0.1.x |
 
 A `.pth` autoload shim registers `gym_pusht` + backfills `task_description`/`task` on `PushTEnv` — required because LeRobot 0.5.2 relies on gymnasium autoload and reads eval attrs unguarded. Included in `lerobot-setup.sh`.
-
----
-
-*Part of the [Physical AI Study Plan](https://github.com/huggingface/lerobot) — Module 1.*
