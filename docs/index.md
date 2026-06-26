@@ -4,22 +4,24 @@ layout: default
 ---
 
 <style>
-/* Center markdown-generated tables on the page (cell text alignment unchanged).
-   Inline tables inside flex cards are width:100%, so auto margins are a no-op there. */
+/* Center markdown tables. Cayman forces `display:block; width:100%`, so we
+   shrink the table to its content width first, then auto-center it. */
 .main-content table {
+  display: table;
+  width: auto;
+  max-width: 100%;
   margin-left: auto;
   margin-right: auto;
 }
-/* Justify body paragraphs so line endings align on both edges. */
+/* Justify body paragraphs for even edges. Note: NO text-align-last — that
+   stretches the final/single line into ugly word gaps. Last lines stay ragged. */
 .main-content p {
   text-align: justify;
-  text-align-last: justify;
   hyphens: auto;
 }
 /* ...but leave paragraphs inside the flex cards left-aligned. */
 .main-content div p {
   text-align: left;
-  text-align-last: left;
 }
 </style>
 
