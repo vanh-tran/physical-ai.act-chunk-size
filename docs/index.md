@@ -1,6 +1,7 @@
 ---
 title: "How Action Chunking with Transformer chunk_size affects its Success Rate"
 layout: default
+canonical_url: "https://vanhtran.dev/physical-ai/what-chunk-size-does-to-act"
 ---
 
 <style>
